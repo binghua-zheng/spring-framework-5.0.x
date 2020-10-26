@@ -213,17 +213,26 @@ public class AnnotatedBeanDefinitionReader {
 	<T> void doRegisterBean(Class<T> annotatedClass, @Nullable Supplier<T> instanceSupplier, @Nullable String name,
 			@Nullable Class<? extends Annotation>[] qualifiers, BeanDefinitionCustomizer... definitionCustomizers) {
 
+		// 解析带有注解的bean，需要此种BeanDefinition来解析
 		AnnotatedGenericBeanDefinition abd = new AnnotatedGenericBeanDefinition(annotatedClass);
+
+		// 解析@Conditional注解，判断是否需要跳过此bean的注册
 		if (this.conditionEvaluator.shouldSkip(abd.getMetadata())) {
 			return;
 		}
 
+		// 提供一个回调函数给此bean，后期在实例化此bean时会调用回调方法，来提供一个bean实例。
+		// 相当于自定义bean的实例化，不使用Spring的实例化策略。
 		abd.setInstanceSupplier(instanceSupplier);
+		// 解析@Scope注解，默认单例
 		ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(abd);
 		abd.setScope(scopeMetadata.getScopeName());
+		// 调用beanNameGenerator给此bean生成一个beanName，或者说beanId，必需是唯一的。
 		String beanName = (name != null ? name : this.beanNameGenerator.generateBeanName(abd, this.registry));
 
+		// 处理一些通用注解@Lazy,@@Primary,@DependsOn,@Role和@Description
 		AnnotationConfigUtils.processCommonDefinitionAnnotations(abd);
+		// 此处主要是通过传入的注解来给构造此beanDefinitionn，一般不需要特殊传入注解，默认为null。
 		if (qualifiers != null) {
 			for (Class<? extends Annotation> qualifier : qualifiers) {
 				if (Primary.class == qualifier) {
@@ -237,11 +246,13 @@ public class AnnotatedBeanDefinitionReader {
 				}
 			}
 		}
+		// 给我们一个自定义BeanDefinition的机会，不过一般不需要，走Spring正常的流程即可。
 		for (BeanDefinitionCustomizer customizer : definitionCustomizers) {
 			customizer.customize(abd);
 		}
-
+		// 注册BeanDefinition到beanFatory
 		BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(abd, beanName);
+		// 解析@Scope的代理模式，一般应用在作用域是session或request。
 		definitionHolder = AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
 		BeanDefinitionReaderUtils.registerBeanDefinition(definitionHolder, this.registry);
 	}
