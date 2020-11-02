@@ -1,8 +1,8 @@
 package com.binghuazheng.ioc.init;
 
 import com.binghuazheng.ioc.init.bean.UserService;
-import com.binghuazheng.ioc.init.config.AppConfig;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 
 /**
  * @ClassName Test
@@ -14,10 +14,10 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 public class Test {
 
 	public static void main(String[] args) {
-		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
-		applicationContext.register(AppConfig.class);
-		applicationContext.refresh();
-		UserService userService = applicationContext.getBean(UserService.class);
+		DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+		ClassPathBeanDefinitionScanner beanDefinitionScanner = new ClassPathBeanDefinitionScanner(beanFactory);
+		beanDefinitionScanner.scan("com.binghuazheng.ioc.init");
+		UserService userService = beanFactory.getBean(UserService.class);
 		userService.getUserInfo();
 	}
 }
