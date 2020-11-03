@@ -1,7 +1,7 @@
 package com.binghuazheng.mybatis.transaction.test;
 
 import com.binghuazheng.mybatis.transaction.config.AppConfig;
-import com.binghuazheng.mybatis.transaction.service.UserInfoService;
+import com.binghuazheng.mybatis.transaction.service.UserService;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
@@ -17,8 +17,8 @@ public class TransactionTest {
 		AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
 		applicationContext.register(AppConfig.class);
 		applicationContext.refresh();
-		UserInfoService userInfoService = applicationContext.getBean(UserInfoService.class);
-		userInfoService.selectUserInfo(1L);
+		UserService userService = applicationContext.getBean(UserService.class);
+		userService.selectUserInfo(1L);
 	}
 
 }
