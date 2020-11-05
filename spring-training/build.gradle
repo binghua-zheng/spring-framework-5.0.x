@@ -16,6 +16,8 @@ dependencies {
 
     // spring-context
     compile(project(":spring-context"))
+    // spring-mvc
+    compile(project(":spring-webmvc"))
     // lombok
     compile group: 'org.projectlombok', name: 'lombok', version: '1.18.10'
     // aspectj support
