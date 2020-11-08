@@ -13,6 +13,6 @@
 	<insert id="insertUser" useGeneratedKeys="true" keyProperty="id">
 		INSERT INTO
 			user_info
-		VALUE(#{name}, #{birthday}, #{deleteFlag})
+		VALUE(#{id}, #{name}, #{birthday}, #{deleteFlag})
 	</insert>
 </mapper>

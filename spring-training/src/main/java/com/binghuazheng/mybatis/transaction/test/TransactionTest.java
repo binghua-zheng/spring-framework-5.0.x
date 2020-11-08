@@ -1,8 +1,11 @@
 package com.binghuazheng.mybatis.transaction.test;
 
 import com.binghuazheng.mybatis.transaction.config.AppConfig;
+import com.binghuazheng.mybatis.transaction.pojo.UserInfo;
 import com.binghuazheng.mybatis.transaction.service.UserService;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+import java.util.Date;
 
 /**
  * @ClassName TransactionTest
@@ -18,7 +21,11 @@ public class TransactionTest {
 		applicationContext.register(AppConfig.class);
 		applicationContext.refresh();
 		UserService userService = applicationContext.getBean(UserService.class);
-		userService.selectUserInfo(1L);
+		UserInfo userInfo = new UserInfo();
+		userInfo.setName("张三");
+		userInfo.setBirthday("2020-12-12");
+		userInfo.setDeleteFlag(true);
+		System.out.println(userService.insertUserInfo(userInfo));
 	}
 
 }

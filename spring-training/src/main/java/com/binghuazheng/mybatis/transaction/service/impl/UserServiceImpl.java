@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @Date 2020/11/3 22:29
  * @Version 1.0
  */
-@Component
+@Component("userService")
 public class UserServiceImpl implements UserService {
 
 	@Autowired
@@ -40,6 +40,7 @@ public class UserServiceImpl implements UserService {
 	 * @return 用户ID
 	 */
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public Long insertUserInfo(UserInfo userInfo) {
 		userMapper.insertUser(userInfo);
 		return userInfo.getId();
