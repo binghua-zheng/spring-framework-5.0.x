@@ -3,10 +3,7 @@ package com.binghuazheng.mybatis.transaction.config;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.*;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -26,6 +23,7 @@ import java.io.IOException;
  * @Version 1.0
  */
 @Configuration
+@EnableAspectJAutoProxy(exposeProxy = true)
 @EnableTransactionManagement
 @PropertySource("classpath:/application.properties")
 @MapperScan("com.binghuazheng.mybatis.transaction.mapper")

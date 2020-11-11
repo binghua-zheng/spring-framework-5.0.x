@@ -339,7 +339,8 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 	 */
 	@Override
 	public final TransactionStatus getTransaction(@Nullable TransactionDefinition definition) throws TransactionException {
-		// 获取当前线程的数据源所存在的事务，如果第一次执行则为null.
+		// 获取当前线程的数据源所存在的事务对象，其内部包含一个Connection对象。
+		// 首次获取时是没有Connection对象的，需要后续去单独获取，嵌套事务下有Connection对象。
 		Object transaction = doGetTransaction();
 
 		// Cache debug flag to avoid repeated checks.
@@ -350,13 +351,13 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			definition = new DefaultTransactionDefinition();
 		}
 
-		// 嵌套事务时，transaction就存在事务信息。TODO 测试嵌套事务
+		// 嵌套事务时，transaction就存在事务信息。
 		if (isExistingTransaction(transaction)) {
 			// Existing transaction found -> check propagation behavior to find out how to behave.
 			return handleExistingTransaction(definition, transaction, debugEnabled);
 		}
 
-		// 下面代码的执行，就表明当前线程的数据源不存在事务。
+		// 下面代码的执行，就表明当前线程没有与数据源对应的事务
 
 		// Check definition settings for new transaction.
 		// 校验指定的事务超时时间
@@ -375,6 +376,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 				definition.getPropagationBehavior() == TransactionDefinition.PROPAGATION_NESTED) {
 			// PROPAGATION_REQUIRED/PROPAGATION_REQUIRES_NEW/PROPAGATION_NESTED
 			// 这三种都会从新创建一个事务。
+			// 挂起当前事务， 社么时候会挂起当前事务。TODO
 			SuspendedResourcesHolder suspendedResources = suspend(null);
 			if (debugEnabled) {
 				logger.debug("Creating new transaction with name [" + definition.getName() + "]: " + definition);
@@ -386,6 +388,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 						definition, transaction, true, newSynchronization, debugEnabled, suspendedResources);
 				// 创建事务，并绑定到此线程的当前数据源上。
 				doBegin(transaction, definition);
+				// 事务同步前的处理，设置当前线程事务相关的一些属性或资源信息
 				prepareSynchronization(status, definition);
 				return status;
 			}

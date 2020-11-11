@@ -863,6 +863,8 @@ public abstract class ClassUtils {
 	}
 
 	/**
+	 * 如果clazz是基于cglib实现的代理类，那么就返回它的目标类，也就是父类。
+	 *
 	 * Return the user-defined class for the given class: usually simply the given
 	 * class, but the original class in case of a CGLIB-generated subclass.
 	 * @param clazz the class to check

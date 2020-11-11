@@ -23,7 +23,7 @@ public class TransactionTest {
 		UserService userService = applicationContext.getBean(UserService.class);
 		UserInfo userInfo = new UserInfo();
 		userInfo.setName("张三");
-		userInfo.setBirthday("2020-12-12");
+		userInfo.setBirthday("2020-11-11");
 		userInfo.setDeleteFlag(true);
 		System.out.println(userService.insertUserInfo(userInfo));
 	}

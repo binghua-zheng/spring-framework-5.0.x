@@ -7,4 +7,6 @@ public interface UserService {
 	void selectUserInfo(Long id);
 
 	Long insertUserInfo(UserInfo userInfo);
+
+	Long insertUser(UserInfo userInfo);
 }
