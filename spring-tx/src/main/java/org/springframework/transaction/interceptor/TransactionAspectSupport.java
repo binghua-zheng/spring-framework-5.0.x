@@ -279,29 +279,40 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			final InvocationCallback invocation) throws Throwable {
 
 		// If the transaction attribute is null, the method is non-transactional.
+		// 获取TransactionInterceptor初始化时给定的事务属性源 - AnnotationTransactionAttributeSource
+		// 可以解析@Transactional注解并获取用户指定事务相关元信息，如果为null,说明此方法不需要事务去处理。
 		TransactionAttributeSource tas = getTransactionAttributeSource();
+		// 获取此方法所匹配的事务属性信息 - RuleBasedTransactionAttribute, 一般在这之前就解析过，直接从缓存提取即可。
+		// 为null说明此方法没有指定事务。
 		final TransactionAttribute txAttr = (tas != null ? tas.getTransactionAttribute(method, targetClass) : null);
+		// 获取事务管理器，可以TransactionInterceptor初始化时指定，也可以从beanFactory中获取。
 		final PlatformTransactionManager tm = determineTransactionManager(txAttr);
+		// 获取此方法的唯一识别。一般为方法的全路径名。
 		final String joinpointIdentification = methodIdentification(method, targetClass, txAttr);
 
 		if (txAttr == null || !(tm instanceof CallbackPreferringPlatformTransactionManager)) {
 			// Standard transaction demarcation with getTransaction and commit/rollback calls.
+			// 获取此目标方法所在的事务信息，内部会从数据源获取mysql连接,并将自动提交设为false.
 			TransactionInfo txInfo = createTransactionIfNecessary(tm, txAttr, joinpointIdentification);
 
 			Object retVal;
 			try {
 				// This is an around advice: Invoke the next interceptor in the chain.
 				// This will normally result in a target object being invoked.
+				// 执行目标方法
 				retVal = invocation.proceedWithInvocation();
 			}
 			catch (Throwable ex) {
 				// target invocation exception
+				// 目标方法产生异常，回滚此次事务
 				completeTransactionAfterThrowing(txInfo, ex);
 				throw ex;
 			}
 			finally {
+				// 不管目标方法执行官是否成功，都要回退到之前的事务信息处。
 				cleanupTransactionInfo(txInfo);
 			}
+			// 目标方法顺利执行，提交事务。
 			commitTransactionAfterReturning(txInfo);
 			return retVal;
 		}
@@ -461,6 +472,8 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 
 		// If no name specified, apply method identification as transaction name.
 		if (txAttr != null && txAttr.getName() == null) {
+			// 为当前事务属性的元信息做一个包装,指定事务名字为此目标方法的全路径名.
+			// DelegatingTransactionAttribute为抽象类.
 			txAttr = new DelegatingTransactionAttribute(txAttr) {
 				@Override
 				public String getName() {
@@ -469,9 +482,11 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			};
 		}
 
+		// 当前事务的状态元信息
 		TransactionStatus status = null;
 		if (txAttr != null) {
 			if (tm != null) {
+				// 从事务管理器中获取一个事务的状态元信息，内部有可能会根据事务属性开辟一个新的事务。
 				status = tm.getTransaction(txAttr);
 			}
 			else {
