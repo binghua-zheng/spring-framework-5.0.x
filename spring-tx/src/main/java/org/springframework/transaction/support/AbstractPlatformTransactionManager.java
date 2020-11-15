@@ -398,6 +398,9 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			}
 		}
 		else {
+			// 事务传播-SUPPORT,NOT_SUPPORT,NEVER这三种传播行为
+			// 如果当前没有事务，这三种传播行为以非事务方式执行，同样创建DefaultTransactionStatus，
+			// 仅让线程同步使用Connection，但是没有事务。
 			// Create "empty" transaction: no actual transaction, but potentially synchronization.
 			if (definition.getIsolationLevel() != TransactionDefinition.ISOLATION_DEFAULT && logger.isWarnEnabled()) {
 				logger.warn("Custom isolation level specified but no actual transaction initiated; " +
@@ -520,6 +523,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 
 		DefaultTransactionStatus status = newTransactionStatus(
 				definition, transaction, newTransaction, newSynchronization, debug, suspendedResources);
+		// 为线程同步做准备，仅当事务状态的newSynchronization为true，也就是新的同步事务时，才会初始化。
 		prepareSynchronization(status, definition);
 		return status;
 	}
