@@ -748,6 +748,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 		}
 
 		DefaultTransactionStatus defStatus = (DefaultTransactionStatus) status;
+		// 除非我们特殊指定，一般不会走此回滚分支。
 		if (defStatus.isLocalRollbackOnly()) {
 			if (defStatus.isDebug()) {
 				logger.debug("Transactional code has requested rollback");
@@ -764,6 +765,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			return;
 		}
 
+		// 开始处理事务提交。
 		processCommit(defStatus);
 	}
 
@@ -779,11 +781,16 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 
 			try {
 				boolean unexpectedRollback = false;
+				// 提交前准备，空方法，无操作。
 				prepareForCommit(status);
+				// 提交前触发的操作，仅当事务状态内newSynchronization为true，才会执行。
+				// 也就是新的同步才会触发。
+				// 这里一般就是资源的释放操作。
 				triggerBeforeCommit(status);
 				triggerBeforeCompletion(status);
 				beforeCompletionInvoked = true;
 
+				// 如果有存储点，释放此存储点。但不需要提交，因为嵌套事务，需要外层事务来提交。
 				if (status.hasSavepoint()) {
 					if (status.isDebug()) {
 						logger.debug("Releasing transaction savepoint");
@@ -792,10 +799,12 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 					status.releaseHeldSavepoint();
 				}
 				else if (status.isNewTransaction()) {
+					// 如果为新的事务，则提交事务。
 					if (status.isDebug()) {
 						logger.debug("Initiating transaction commit");
 					}
 					unexpectedRollback = status.isGlobalRollbackOnly();
+					// 提交事务
 					doCommit(status);
 				}
 				else if (isFailEarlyOnGlobalRollbackOnly()) {
@@ -835,6 +844,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			// Trigger afterCommit callbacks, with an exception thrown there
 			// propagated to callers but the transaction still considered as committed.
 			try {
+				// 提交事务后的回调方法
 				triggerAfterCommit(status);
 			}
 			finally {
@@ -843,6 +853,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 
 		}
 		finally {
+			// 这里主要用于在提交事务后，清除线程内的事务资源。
 			cleanupAfterCompletion(status);
 		}
 	}
@@ -968,6 +979,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 	 * @param status object representing the transaction
 	 */
 	protected final void triggerBeforeCommit(DefaultTransactionStatus status) {
+		// 仅当事务状态为新的事务同步时才会执行
 		if (status.isNewSynchronization()) {
 			if (status.isDebug()) {
 				logger.trace("Triggering beforeCommit synchronization");
@@ -1052,13 +1064,17 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 	 * @see #doCleanupAfterCompletion
 	 */
 	private void cleanupAfterCompletion(DefaultTransactionStatus status) {
+		// 设置当前事务状态为完整或结束状态。
 		status.setCompleted();
+		// 如果是新的事务同步，则清除当前线程内存储的相关事务资源。
 		if (status.isNewSynchronization()) {
 			TransactionSynchronizationManager.clear();
 		}
+		// 如果是新的事务，则清除线程内的Connection资源，并且恢复Connection的自动提交等状态。释放Connection到连接池中。
 		if (status.isNewTransaction()) {
 			doCleanupAfterCompletion(status.getTransaction());
 		}
+		// 如果有挂起的资源，则恢复此挂起的资源。
 		if (status.getSuspendedResources() != null) {
 			if (status.isDebug()) {
 				logger.debug("Resuming suspended transaction after completion of inner transaction");

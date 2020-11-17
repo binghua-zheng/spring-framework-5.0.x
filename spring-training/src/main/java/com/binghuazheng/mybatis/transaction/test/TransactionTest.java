@@ -25,7 +25,7 @@ public class TransactionTest {
 		userInfo.setName("张三");
 		userInfo.setBirthday("2020-11-11");
 		userInfo.setDeleteFlag(true);
-		System.out.println(userService.insertUserInfo(userInfo));
+		userService.selectUserInfo(23L);
 	}
 
 }
