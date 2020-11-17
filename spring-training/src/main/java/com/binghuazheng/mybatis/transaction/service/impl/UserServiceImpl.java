@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService {
 	 * @return 用户ID
 	 */
 	@Override
-	@Transactional(rollbackFor = Exception.class, propagation = Propagation.SUPPORTS)
+	@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
 	public Long insertUserInfo(UserInfo userInfo) {
 		userMapper.insertUser(userInfo);
 		userInfo.setBirthday("2020-12-12");
@@ -58,7 +58,7 @@ public class UserServiceImpl implements UserService {
 	 * @return 用户ID
 	 */
 	@Override
-//	@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+	@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
 	public Long insertUser(UserInfo userInfo) {
 		userMapper.insertUser(userInfo);
 		return userInfo.getId();

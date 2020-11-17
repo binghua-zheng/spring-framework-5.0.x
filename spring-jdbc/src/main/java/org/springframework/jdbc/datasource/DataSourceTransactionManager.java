@@ -241,10 +241,12 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 	protected Object doGetTransaction() {
 		// 事务对象，其内部包含数据库的Connection
 		DataSourceTransactionObject txObject = new DataSourceTransactionObject();
+		// 默认允许设置存储点，nested事务传播行为时会用到。
 		txObject.setSavepointAllowed(isNestedTransactionAllowed());
 		// 当前线程中,以数据源对象为key从TransactionSynchronizationManager中获取数据库连接对象
 		ConnectionHolder conHolder =
 				(ConnectionHolder) TransactionSynchronizationManager.getResource(obtainDataSource());
+		// 取出当前线程的Connection对象后，放入本次事务对象中。
 		txObject.setConnectionHolder(conHolder, false);
 		return txObject;
 	}
@@ -252,6 +254,7 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 	@Override
 	protected boolean isExistingTransaction(Object transaction) {
 		DataSourceTransactionObject txObject = (DataSourceTransactionObject) transaction;
+		// 存在事务前提，一定有Connection连接。并且连接的事务状态已激活。
 		return (txObject.hasConnectionHolder() && txObject.getConnectionHolder().isTransactionActive());
 	}
 
@@ -276,7 +279,7 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 				txObject.setConnectionHolder(new ConnectionHolder(newCon), true);
 			}
 
-			// 标记此Connection开始绑定当前线程，同步事务。
+			// 标记此Connection在当前事务内开始绑定当前线程。
 			txObject.getConnectionHolder().setSynchronizedWithTransaction(true);
 			con = txObject.getConnectionHolder().getConnection();
 
@@ -298,7 +301,7 @@ public class DataSourceTransactionManager extends AbstractPlatformTransactionMan
 
 			// SET TRANSACTION READ ONLY  TODO 不明白此处操作的意义
 			prepareTransactionalConnection(con, definition);
-			// 激活事务
+			// 激活当前Connection的事务状态
 			txObject.getConnectionHolder().setTransactionActive(true);
 
 			// 设置超时时间
