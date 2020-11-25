@@ -2,6 +2,7 @@ package com.binghuazheng.ioc.conditional;
 
 import com.binghuazheng.ioc.conditional.bean.UserService;
 import com.binghuazheng.ioc.conditional.config.AppConfig;
+import com.binghuazheng.ioc.conditional.config.BusinessConfig;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
@@ -18,7 +19,7 @@ public class Test {
 		applicationContext.register(AppConfig.class);
 		applicationContext.refresh();
 
-		UserService userService = applicationContext.getBean(UserService.class);
-		userService.selectUserInfo();
+		BusinessConfig userService = applicationContext.getBean(BusinessConfig.class);
+		System.out.println(userService);
 	}
 }

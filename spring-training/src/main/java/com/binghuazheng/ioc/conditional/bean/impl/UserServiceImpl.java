@@ -2,9 +2,11 @@ package com.binghuazheng.ioc.conditional.bean.impl;
 
 import com.binghuazheng.ioc.conditional.bean.OrderService;
 import com.binghuazheng.ioc.conditional.bean.UserService;
+import com.binghuazheng.ioc.conditional.condition.ConditionOnBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Conditional;
 
 /**
  * @ClassName UserServiceImpl

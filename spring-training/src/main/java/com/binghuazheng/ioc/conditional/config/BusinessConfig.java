@@ -14,10 +14,10 @@ import org.springframework.context.annotation.Configuration;
  * @Date 2020/11/24 21:28
  * @Version 1.0
  */
+@Conditional(ConditionOnBean.class)
 @Configuration
 public class BusinessConfig {
 
-	@Conditional(ConditionOnBean.class)
 	@Bean
 	public UserService userService() {
 		return new UserServiceImpl();
